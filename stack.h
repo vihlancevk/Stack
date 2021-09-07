@@ -4,24 +4,25 @@
 struct Stack_t
 {
     int capacity;
-    int *date;
+    int *data;
     size_t sizeStack;
 };
 
-enum ErrorCode
+enum StackErrorCode
 {
-    NO_ERROR = 0,
+    STACK_NO_ERROR = 0,
     STACK_NOT_EXIST = -1,
-    STACK_IS_EMPTY = -2
+    STACK_IS_EMPTY = -2,
+    STACK_DATA_NOT_EMPTY = -3
 };
 
-const int MEMORY_MULTIPLIER = 2;
+extern const int STACK_MEMORY_RESIZE;
 
-int CheckExistenceStack(Stack_t *Stack);
-int createStack(Stack_t *Stack, size_t maxElement);
-int clearStack(Stack_t *Stack);
-int push(Stack_t *Stack, int element);
-int pop(Stack_t *Stack);
-int outputStack(Stack_t *Stack);
+int checkExistenceStack(Stack_t *thou);
+int createStack(Stack_t *thou, size_t capacity);
+int clearStack(Stack_t *thou);
+int push(Stack_t *thou, int element);
+int pop(Stack_t *thou, int *top);
+int dump(Stack_t *thou);
 
 #endif

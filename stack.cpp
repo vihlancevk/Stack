@@ -3,100 +3,150 @@
 #include <assert.h>
 #include "stack.h"
 
-int CheckExistenceStack(Stack_t *Stack)
+const int STACK_MEMORY_RESIZE = 2;
+
+int checkExistenceStack(Stack_t *thou)
 {
-    if (Stack == nullptr)
+    if (thou == nullptr)
     {
-        printf("STACK_NOT_EXIST!\n");
         return STACK_NOT_EXIST;
     }
 
-    return NO_ERROR;
+    if (thou->data == nullptr)
+    {
+        return STACK_DATA_NOT_EMPTY;
+    }
+
+    return STACK_NO_ERROR;
 }
 
-int createStack(Stack_t *Stack, size_t maxElement)
+int createStack(Stack_t *thou, size_t capacity)
 {
-    if (CheckExistenceStack(Stack) == STACK_NOT_EXIST)
+    if (thou != nullptr)
     {
-        return STACK_NOT_EXIST;
+        thou->capacity = capacity;
+        thou->data = (int *) calloc(capacity, sizeof(int));
+        if (thou->data == nullptr)
+        {
+            return STACK_DATA_NOT_EMPTY;
+        }
+        thou->sizeStack = 0;
+
+        return STACK_NO_ERROR;
     }
     else
     {
-        Stack->capacity = maxElement;
-        Stack->date = (int *) calloc(maxElement, sizeof(int));
-        Stack->sizeStack = 0;
-
-        return NO_ERROR;
-    }
-}
-int clearStack(Stack_t *Stack)
-{
-    if (CheckExistenceStack(Stack) == STACK_NOT_EXIST)
-    {
         return STACK_NOT_EXIST;
     }
-
-    Stack->sizeStack = 0;
-
-    return NO_ERROR;
 }
 
-int push(Stack_t *Stack, int element)
+int clearStack(Stack_t *thou)
 {
-    if (CheckExistenceStack(Stack) == STACK_NOT_EXIST)
+    int stackStatus = checkExistenceStack(thou);
+    if (stackStatus == STACK_NO_ERROR)
     {
-        return STACK_NOT_EXIST;
-    }
+        thou->sizeStack = 0;
 
-    if (Stack->sizeStack < Stack->capacity)
-    {
-        Stack->date[Stack->sizeStack] = element;
-        Stack->sizeStack++;
+        return STACK_NO_ERROR;
     }
     else
     {
-        Stack->capacity = (Stack->capacity + 1) * MEMORY_MULTIPLIER;
-        Stack->date = (int *) realloc(Stack->date, Stack->capacity * sizeof(int));
-        Stack->date[Stack->sizeStack] = element;
-        Stack->sizeStack++;
+        if (stackStatus == STACK_NOT_EXIST)
+        {
+            return STACK_NOT_EXIST;
+        }
+        else
+        {
+            return STACK_DATA_NOT_EMPTY;
+        }
     }
-
-    return NO_ERROR;
 }
 
-int pop(Stack_t *Stack)
+int push(Stack_t *thou, int element)
 {
-    if (CheckExistenceStack(Stack) == STACK_NOT_EXIST)
+    int stackStatus = checkExistenceStack(thou);
+    if (stackStatus == STACK_NO_ERROR)
     {
-        return STACK_NOT_EXIST;
-    }
+        if (thou->sizeStack >= thou->capacity)
+        {
+            thou->capacity = (thou->capacity + 1) * STACK_MEMORY_RESIZE;
+            thou->data = (int *) realloc(thou->data, thou->capacity * sizeof(int));
+            if (thou->data == nullptr)
+            {
+                return STACK_DATA_NOT_EMPTY;
+            }
+        }
 
-    if (Stack->sizeStack > 0)
-    {
-        int top = Stack->date[Stack->sizeStack - 1];
-        Stack->sizeStack--;
-        return top;
+        thou->data[thou->sizeStack] = element;
+        thou->sizeStack++;
+
+        return STACK_NO_ERROR;
     }
     else
     {
-        printf("\nSTACK_IS_EMPTY!\n");
-        return STACK_IS_EMPTY;
+        if (stackStatus == STACK_NOT_EXIST)
+        {
+            return STACK_NOT_EXIST;
+        }
+        else
+        {
+            return STACK_DATA_NOT_EMPTY;
+        }
     }
 }
 
-int outputStack(Stack_t *Stack)
+int pop(Stack_t *thou, int *top)
 {
-    if (CheckExistenceStack(Stack) == STACK_NOT_EXIST)
+    int stackStatus = checkExistenceStack(thou);
+    if (stackStatus == STACK_NO_ERROR)
     {
-        return STACK_NOT_EXIST;
+        if (thou->sizeStack > 0)
+        {
+            *top = thou->data[thou->sizeStack - 1];
+            thou->sizeStack--;
+            return STACK_NO_ERROR;
+        }
+        else
+        {
+            return STACK_IS_EMPTY;
+        }
     }
-
-    for (int i = 0; i < Stack->sizeStack; i++)
+    else
     {
-        printf("%d ", Stack->date[i]);
+        if (stackStatus == STACK_NOT_EXIST)
+        {
+            return STACK_NOT_EXIST;
+        }
+        else
+        {
+            return STACK_DATA_NOT_EMPTY;
+        }
     }
+}
 
-    printf("\n");
+int dump(Stack_t *thou)
+{
+    int stackStatus = checkExistenceStack(thou);
+    if (stackStatus == STACK_NO_ERROR)
+    {
+        for (int i = 0; i < thou->sizeStack; i++)
+        {
+            printf("%d ", thou->data[i]);
+        }
 
-    return NO_ERROR;
+        printf("\n");
+
+        return STACK_NO_ERROR;
+    }
+    else
+    {
+        if (stackStatus == STACK_NOT_EXIST)
+        {
+            return STACK_NOT_EXIST;
+        }
+        else
+        {
+            return STACK_DATA_NOT_EMPTY;
+        }
+    }
 }
