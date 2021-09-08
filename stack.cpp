@@ -14,7 +14,7 @@ int checkExistenceStack(Stack_t *thou)
 
     if (thou->data == nullptr)
     {
-        return STACK_DATA_NOT_EMPTY;
+        return STACK_DATA_REALLOC_ERROR;
     }
 
     return STACK_NO_ERROR;
@@ -22,22 +22,17 @@ int checkExistenceStack(Stack_t *thou)
 
 int createStack(Stack_t *thou, size_t capacity)
 {
-    if (thou != nullptr)
-    {
-        thou->capacity = capacity;
-        thou->data = (int *) calloc(capacity, sizeof(int));
-        if (thou->data == nullptr)
-        {
-            return STACK_DATA_NOT_EMPTY;
-        }
-        thou->sizeStack = 0;
+    assert(thou != nullptr);
 
-        return STACK_NO_ERROR;
-    }
-    else
+    thou->capacity = capacity;
+    thou->data = (stackDataType *) calloc(capacity, sizeof(stackDataType));
+    if (thou->data == nullptr)
     {
-        return STACK_NOT_EXIST;
+        return STACK_DATA_REALLOC_ERROR;
     }
+    thou->sizeStack = 0;
+
+    return STACK_NO_ERROR;
 }
 
 int clearStack(Stack_t *thou)
@@ -46,23 +41,12 @@ int clearStack(Stack_t *thou)
     if (stackStatus == STACK_NO_ERROR)
     {
         thou->sizeStack = 0;
+    }
 
-        return STACK_NO_ERROR;
-    }
-    else
-    {
-        if (stackStatus == STACK_NOT_EXIST)
-        {
-            return STACK_NOT_EXIST;
-        }
-        else
-        {
-            return STACK_DATA_NOT_EMPTY;
-        }
-    }
+    return stackStatus;
 }
 
-int push(Stack_t *thou, int element)
+int push(Stack_t *thou, stackDataType element)
 {
     int stackStatus = checkExistenceStack(thou);
     if (stackStatus == STACK_NO_ERROR)
@@ -70,32 +54,21 @@ int push(Stack_t *thou, int element)
         if (thou->sizeStack >= thou->capacity)
         {
             thou->capacity = (thou->capacity + 1) * STACK_MEMORY_RESIZE;
-            thou->data = (int *) realloc(thou->data, thou->capacity * sizeof(int));
+            thou->data = (stackDataType *) realloc(thou->data, (thou->capacity) * sizeof(stackDataType));
             if (thou->data == nullptr)
             {
-                return STACK_DATA_NOT_EMPTY;
+                return STACK_DATA_REALLOC_ERROR;
             }
         }
 
         thou->data[thou->sizeStack] = element;
         thou->sizeStack++;
+    }
 
-        return STACK_NO_ERROR;
-    }
-    else
-    {
-        if (stackStatus == STACK_NOT_EXIST)
-        {
-            return STACK_NOT_EXIST;
-        }
-        else
-        {
-            return STACK_DATA_NOT_EMPTY;
-        }
-    }
+    return stackStatus;
 }
 
-int pop(Stack_t *thou, int *top)
+int pop(Stack_t *thou, stackDataType *top)
 {
     int stackStatus = checkExistenceStack(thou);
     if (stackStatus == STACK_NO_ERROR)
@@ -113,14 +86,7 @@ int pop(Stack_t *thou, int *top)
     }
     else
     {
-        if (stackStatus == STACK_NOT_EXIST)
-        {
-            return STACK_NOT_EXIST;
-        }
-        else
-        {
-            return STACK_DATA_NOT_EMPTY;
-        }
+        return stackStatus;
     }
 }
 
@@ -129,24 +95,13 @@ int dump(Stack_t *thou)
     int stackStatus = checkExistenceStack(thou);
     if (stackStatus == STACK_NO_ERROR)
     {
-        for (int i = 0; i < thou->sizeStack; i++)
+        for (size_t i = 0; i < thou->sizeStack; i++)
         {
             printf("%d ", thou->data[i]);
         }
 
         printf("\n");
+    }
 
-        return STACK_NO_ERROR;
-    }
-    else
-    {
-        if (stackStatus == STACK_NOT_EXIST)
-        {
-            return STACK_NOT_EXIST;
-        }
-        else
-        {
-            return STACK_DATA_NOT_EMPTY;
-        }
-    }
+    return stackStatus;
 }

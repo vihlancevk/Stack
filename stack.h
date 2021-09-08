@@ -1,10 +1,12 @@
 #ifndef STACK_H
 #define STACK_H
 
+typedef int stackDataType;
+
 struct Stack_t
 {
-    int capacity;
-    int *data;
+    size_t capacity;
+    stackDataType *data;
     size_t sizeStack;
 };
 
@@ -13,7 +15,7 @@ enum StackErrorCode
     STACK_NO_ERROR = 0,
     STACK_NOT_EXIST = -1,
     STACK_IS_EMPTY = -2,
-    STACK_DATA_NOT_EMPTY = -3
+    STACK_DATA_REALLOC_ERROR = -3
 };
 
 extern const int STACK_MEMORY_RESIZE;

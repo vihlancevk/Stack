@@ -3,8 +3,8 @@
 
 int main()
 {
-    Stack_t thou = {0, nullptr, 0};
-    int stackStatus = createStack(&thou, 10);
+    Stack_t stack = {0, nullptr, 0};
+    int stackStatus = createStack(&stack, 10);
     if (stackStatus != STACK_NO_ERROR)
     {
         return stackStatus;
@@ -12,13 +12,13 @@ int main()
 
     for (int i = 0; i < 20; i++)
     {
-        if ((stackStatus = push(&thou, i)) != STACK_NO_ERROR)
+        if ((stackStatus = push(&stack, i)) != STACK_NO_ERROR)
         {
             return stackStatus;
         }
     }
 
-    if ((stackStatus = dump(&thou)) != STACK_NO_ERROR)
+    if ((stackStatus = dump(&stack)) != STACK_NO_ERROR)
     {
         return stackStatus;
     }
@@ -26,7 +26,7 @@ int main()
     int top = 0;
     for (int i = 0; i < 23; i++)
     {
-        stackStatus = pop(&thou, &top);
+        stackStatus = pop(&stack, &top);
 
         if (stackStatus != STACK_NO_ERROR)
         {
@@ -38,7 +38,7 @@ int main()
 
     printf("\n");
 
-    if ((stackStatus = clearStack(&thou)) != STACK_NO_ERROR)
+    if ((stackStatus = clearStack(&stack)) != STACK_NO_ERROR)
     {
         return stackStatus;
     }
