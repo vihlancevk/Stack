@@ -3,45 +3,34 @@
 
 int main()
 {
+    FILE *foutput = fopen("output.txt", "w");
+
     Stack_t stack = {0, nullptr, 0};
-    int stackStatus = createStack(&stack, 10);
+    int stackStatus = createStack(&stack, 10, foutput);
     if (stackStatus != STACK_NO_ERROR)
     {
         return stackStatus;
     }
 
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 15; i++)
     {
-        if ((stackStatus = push(&stack, i)) != STACK_NO_ERROR)
+        if ((stackStatus = push(&stack, i, foutput)) != STACK_NO_ERROR)
         {
             return stackStatus;
         }
     }
 
-    if ((stackStatus = dump(&stack)) != STACK_NO_ERROR)
-    {
-        return stackStatus;
-    }
-
     int top = 0;
-    for (int i = 0; i < 23; i++)
+    for (int i = 0; i < 10000; i++)
     {
-        stackStatus = pop(&stack, &top);
+        stackStatus = pop(&stack, &top, foutput);
 
         if (stackStatus != STACK_NO_ERROR)
         {
             return stackStatus;
         }
-
-        printf("%d ", top);
     }
 
-    printf("\n");
-
-    if ((stackStatus = clearStack(&stack)) != STACK_NO_ERROR)
-    {
-        return stackStatus;
-    }
-
+    fclose(foutput);
     return stackStatus;
 }

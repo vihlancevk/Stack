@@ -15,16 +15,20 @@ enum StackErrorCode
     STACK_NO_ERROR = 0,
     STACK_NOT_EXIST = -1,
     STACK_IS_EMPTY = -2,
-    STACK_DATA_REALLOC_ERROR = -3
+    STACK_DATA_REALLOC_ERROR = -3,
+    STACK_CAPACITY_LESS_SIZESTACK = -4
 };
 
-extern const int STACK_MEMORY_RESIZE;
+extern const int STACK_MEMORY_RESIZE_UP;
+extern const int STACK_MEMORY_RESIZE_DOWN;
 
-int checkExistenceStack(Stack_t *thou);
-int createStack(Stack_t *thou, size_t capacity);
-int clearStack(Stack_t *thou);
-int push(Stack_t *thou, int element);
-int pop(Stack_t *thou, int *top);
-int dump(Stack_t *thou);
+int checkCorrectStack(Stack_t *stack);
+void outputStackError(int stackStatus, FILE *foutput);
+int createStack(Stack_t *stack, size_t capacity, FILE *foutput);
+int reallocStack(Stack_t *stack, size_t new_capacity);
+int clearStack(Stack_t *stack, FILE *foutput);
+int push(Stack_t *stack, int element, FILE *foutput);
+int pop(Stack_t *stack, int *top, FILE *foutput);
+void dump(Stack_t *stack, FILE *foutput);
 
 #endif
