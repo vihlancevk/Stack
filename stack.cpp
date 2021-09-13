@@ -3,18 +3,19 @@
 #include <assert.h>
 #include "stack.h"
 
-const int STACK_MEMORY_RESIZE_UP = 2;
-const int STACK_MEMORY_RESIZE_DOWN = 3;
+const int STACK_MEMORY_EXPAND = 2;
+const int STACK_MEMORY_SHRINK = 3;
 
+FILE *foutput = nullptr;
 
-int checkCorrectStack(Stack_t *stack)
+int checkStack(Stack_t *stack)
 {
     if (stack == nullptr)
     {
         return STACK_NOT_EXIST;
     }
 
-    if (stack->capacity == 0 && stack->data == nullptr && stack->sizeStack == 0)
+    if (stack->capacity == 0 && stack->data == nullptr && stack->size == 0)
     {
         return STACK_NO_ERROR;
     }
@@ -24,57 +25,57 @@ int checkCorrectStack(Stack_t *stack)
         return STACK_DATA_REALLOC_ERROR;
     }
 
-    if (stack->capacity < stack->sizeStack)
+    if (stack->capacity < stack->size)
     {
-        return STACK_CAPACITY_LESS_SIZESTACK;
+        return STACK_CAPACITY_LESS_SIZE;
     }
 
     return STACK_NO_ERROR;
 }
 
-void outputStackError(int stackStatus, FILE *foutput)
+static char *getStackError(int stackStatus)
 {
     switch(stackStatus)
     {
-        case STACK_NO_ERROR:           {fprintf(foutput, "STACK_NO_ERROR - %d\n", stackStatus);                 break;}
-        case STACK_NOT_EXIST:          {fprintf(foutput, "STACK_NOT_EXIST - %d\n", stackStatus);                break;}
-        case STACK_IS_EMPTY:           {fprintf(foutput, "STACK_IS_EMPTY - %d\n", stackStatus);                 break;}
-        case STACK_DATA_REALLOC_ERROR: {fprintf(foutput, "STACK_DATA_REALLOC_ERROR - %d\n", stackStatus);       break;}
-        default:                       {fprintf(foutput, "STACK_CAPACITY_LESS_SIZESTACK - %d\n", stackStatus);  break;}
+        case STACK_NO_ERROR:           {return "STACK_NO_ERROR - %d\n";           break;}
+        case STACK_NOT_EXIST:          {return "STACK_NOT_EXIST - %d\n";          break;}
+        case POP_FROM_EMPTY_STACK:     {return "POP_FROM_EMPTY_STACK - %d\n";     break;}
+        case STACK_DATA_REALLOC_ERROR: {return "STACK_DATA_REALLOC_ERROR - %d\n"; break;}
+        default:                       {return "STACK_CAPACITY_LESS_size - %d\n"; break;}
     }
 }
 
-int createStack(Stack_t *stack, size_t capacity, FILE *foutput)
+int createStack(Stack_t *stack, size_t capacity)
 {
-    int stackStatus = checkCorrectStack(stack);
+    int stackStatus = checkStack(stack);
     if (stackStatus != STACK_NO_ERROR)
     {
         return stackStatus;
     }
 
     stack->capacity = capacity;
-    stack->data = (stackDataType *) calloc(capacity, sizeof(stackDataType));
+    stack->data = (stackData_t *) calloc(capacity, sizeof(stackData_t));
     if (stack->data == nullptr)
     {
-        dump(stack, foutput);
+        dump(stack);
         return STACK_DATA_REALLOC_ERROR;
     }
-    stack->sizeStack = 0;
+    stack->size = 0;
 
-    dump(stack, foutput);
+    dump(stack);
     return stackStatus;
 }
 
-int reallocStack(Stack_t *stack, size_t new_capacity)
+static int reallocStack(Stack_t *stack, size_t new_capacity)
 {
-    int stackStatus = checkCorrectStack(stack);
+    int stackStatus = checkStack(stack);
     if (stackStatus != STACK_NO_ERROR)
     {
         return stackStatus;
     }
 
-    stackDataType *data = stack->data;
-    stack->data = (stackDataType *)realloc(stack->data, new_capacity * sizeof(stackDataType));
+    stackData_t *data = stack->data;
+    stack->data = (stackData_t *)realloc(stack->data, new_capacity * sizeof(stackData_t));
     if (stack->data == nullptr)
     {
         free(data);
@@ -84,93 +85,96 @@ int reallocStack(Stack_t *stack, size_t new_capacity)
     return stackStatus;
 }
 
-int clearStack(Stack_t *stack, FILE *foutput)
+int clearStack(Stack_t *stack)
 {
-    int stackStatus = checkCorrectStack(stack);
+    int stackStatus = checkStack(stack);
     if (stackStatus == STACK_NO_ERROR)
     {
-        stack->sizeStack = 0;
+        stack->size = 0;
     }
 
-    dump(stack, foutput);
+    dump(stack);
     return stackStatus;
 }
 
-int push(Stack_t *stack, stackDataType element, FILE *foutput)
+int push(Stack_t *stack, stackData_t element)
 {
-    int stackStatus = checkCorrectStack(stack);
+    int stackStatus = checkStack(stack);
     if (stackStatus != STACK_NO_ERROR)
     {
-        dump(stack, foutput);
+        dump(stack);
         return stackStatus;
     }
 
-    if (stack->sizeStack >= stack->capacity)
+    if (stack->size >= stack->capacity)
     {
-        size_t new_capacity = (stack->capacity + 1) * STACK_MEMORY_RESIZE_UP;
+        size_t new_capacity = (stack->capacity + 1) * STACK_MEMORY_EXPAND;
         stackStatus = reallocStack(stack, new_capacity);
         if (stackStatus != STACK_NO_ERROR)
         {
-            dump(stack, foutput);
+            dump(stack);
             return stackStatus;
         }
     }
 
-    stack->data[stack->sizeStack] = element;
-    stack->sizeStack++;
+    stack->data[stack->size] = element;
+    stack->size++;
 
-    dump(stack, foutput);
+    dump(stack);
     return stackStatus;
 }
 
-int pop(Stack_t *stack, stackDataType *top, FILE *foutput)
+int pop(Stack_t *stack, stackData_t *top)
 {
-    int stackStatus = checkCorrectStack(stack);
+    int stackStatus = checkStack(stack);
     if (stackStatus != STACK_NO_ERROR)
     {
-        dump(stack, foutput);
+        dump(stack);
         return stackStatus;
     }
 
-    if (stack->sizeStack > 0)
+    if (stack->size > 0)
     {
-        *top = stack->data[stack->sizeStack - 1];
-        stack->sizeStack--;
-        if (stack->sizeStack != 0 && stack->capacity / STACK_MEMORY_RESIZE_DOWN > stack->sizeStack)
+        *top = stack->data[stack->size - 1];
+        stack->size--;
+        if (stack->size != 0 && stack->capacity / STACK_MEMORY_SHRINK > stack->size)
         {
-            size_t new_capacity = (stack->capacity) / STACK_MEMORY_RESIZE_DOWN;
+            size_t new_capacity = (stack->capacity) / STACK_MEMORY_SHRINK;
             stackStatus = reallocStack(stack, new_capacity);
-            dump(stack, foutput);
+            dump(stack);
             return stackStatus;
         }
-        dump(stack, foutput);
+        dump(stack);
         return STACK_NO_ERROR;
     }
     else
     {
-        dump(stack, foutput);
-        return STACK_IS_EMPTY;
+        dump(stack);
+        return POP_FROM_EMPTY_STACK;
     }
 }
 
-void dump(Stack_t *stack, FILE *foutput)
+void dump(Stack_t *stack)
 {
-    int stackStatus = checkCorrectStack(stack);
+    foutput = fopen("output.txt", "a");
+
+    int stackStatus = checkStack(stack);
 
     fprintf(foutput, "================================================================================\n");
-    outputStackError(stackStatus, foutput);
+    fprintf(foutput, "%s\n", getStackError(stackStatus));
     fprintf(foutput, "Stack address: %llu\n", stack);
     fprintf(foutput, "Capacity addres: %llu\n", &(stack->capacity));
     fprintf(foutput, "Capacity: %Iu\n", stack->capacity);
-    fprintf(foutput, "SizeStack addres: %llu\n", &(stack->sizeStack));
-    fprintf(foutput, "SizeStack: %Iu\n", stack->sizeStack);
+    fprintf(foutput, "size addres: %llu\n", &(stack->size));
+    fprintf(foutput, "size: %Iu\n", stack->size);
     fprintf(foutput, "Data address: %llu\nData:\n", stack->data);
 
 
-    for (size_t i = 0; i < stack->sizeStack; i++)
+    for (size_t i = 0; i < stack->size; i++)
     {
         fprintf(foutput, "[%Iu] - %d\n", i, stack->data[i]);
     }
     fprintf(foutput, "--------------------------------------------------------------------------------\n");
+
     return;
 }
