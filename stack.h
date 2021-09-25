@@ -3,35 +3,43 @@
 
 typedef int stackData_t;
 
-struct Stack_t
+enum StackStatus
+{
+    STACK_NOT_CONSTRUCTED,
+    STACK_CONSTRUCTED,
+    STACK_DESTROYED
+};
+
+struct stack_t
 {
     size_t capacity;
     stackData_t *data;
     size_t size;
+    StackStatus status;
 };
 
 enum StackErrorCode
 {
-    STACK_NO_ERROR = 0,
-    STACK_NOT_EXIST = -1,
-    POP_FROM_EMPTY_STACK = -2,
-    STACK_DATA_REALLOC_ERROR = -3,
-    STACK_CAPACITY_LESS_SIZE = -4
+    STACK_NO_ERROR,
+    STACK_NOT_EXIST,
+    STACK_ALREADY_CONSTRUCTED,
+    STACK_DATA_DESTROY,
+    STACK_POP_FROM_EMPTY,
+    STACK_DATA_CALLOC_ERROR,
+    STACK_DATA_REALLOC_ERROR,
+    STACK_CAPACITY_LESS_SIZE
 };
 
-extern const int STACK_MEMORY_RESIZE_UP;
-extern const int STACK_MEMORY_RESIZE_DOWN;
+StackErrorCode StackCtor(stack_t *stack, size_t capacity);
 
-int checkStack(Stack_t *stack);
+StackErrorCode StackDtor(stack_t *stack);
 
-int createStack(Stack_t *stack, size_t capacity);
+StackErrorCode StackPush(stack_t *stack, int element);
 
-int clearStack(Stack_t *stack);
+StackErrorCode StackPop(stack_t *stack, int *top);
 
-int push(Stack_t *stack, int element);
+size_t GetStackCapacity(stack_t *stack);
 
-int pop(Stack_t *stack, int *top);
-
-void dump(Stack_t *stack);
+size_t GetStackSize(stack_t *stack);
 
 #endif

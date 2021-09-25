@@ -3,24 +3,34 @@
 #include <assert.h>
 #include "stack.h"
 
-const int STACK_MEMORY_EXPAND = 2;
-const int STACK_MEMORY_SHRINK = 3;
+const size_t STACK_MEMORY_EXPAND = 2;
+const size_t STACK_MEMORY_SHRINK = 3;
+const void* const ERR_PTR = (void*)(1000-7);
+const void* const ERR_CALLOC_PTR = (void*)(300);
+const void* const ERR_REALLOC_PTR = (void*)(666);
+
+static void dump(stack_t *stack, const char *nameFunction);
 
 FILE *foutput = nullptr;
 
-int checkStack(Stack_t *stack)
+static StackErrorCode GetStackStatus(stack_t *stack)
 {
     if (stack == nullptr)
     {
         return STACK_NOT_EXIST;
     }
 
-    if (stack->capacity == 0 && stack->data == nullptr && stack->size == 0)
+    if (stack->data == ERR_PTR)
     {
-        return STACK_NO_ERROR;
+        return STACK_DATA_DESTROY;
     }
 
-    if (stack->data == nullptr)
+    if (stack->data == ERR_CALLOC_PTR)
+    {
+        return STACK_DATA_CALLOC_ERROR;
+    }
+
+    if (stack->data == ERR_REALLOC_PTR)
     {
         return STACK_DATA_REALLOC_ERROR;
     }
@@ -33,86 +43,110 @@ int checkStack(Stack_t *stack)
     return STACK_NO_ERROR;
 }
 
-static char *getStackError(int stackStatus)
+static const char *StackErrorToString(StackErrorCode error)
 {
-    switch(stackStatus)
+    switch(error)
     {
-        case STACK_NO_ERROR:           {return "STACK_NO_ERROR - %d\n";           break;}
-        case STACK_NOT_EXIST:          {return "STACK_NOT_EXIST - %d\n";          break;}
-        case POP_FROM_EMPTY_STACK:     {return "POP_FROM_EMPTY_STACK - %d\n";     break;}
-        case STACK_DATA_REALLOC_ERROR: {return "STACK_DATA_REALLOC_ERROR - %d\n"; break;}
-        default:                       {return "STACK_CAPACITY_LESS_size - %d\n"; break;}
+        case STACK_NO_ERROR:           {return "STACK_NO_ERROR";          }
+        case STACK_NOT_EXIST:          {return "STACK_NOT_EXIST";         }
+        case STACK_DATA_DESTROY:       {return "STACK_DATA_DESTROY";      }
+        case STACK_POP_FROM_EMPTY:     {return "STACK_POP_FROM_EMPTY";    }
+        case STACK_DATA_CALLOC_ERROR:  {return "STACK_DATA_CALLOC_ERROR"; }
+        case STACK_DATA_REALLOC_ERROR: {return "STACK_DATA_REALLOC_ERROR";}
+        case STACK_CAPACITY_LESS_SIZE: {return "STACK_CAPACITY_LESS_SIZE";}
+        default:                       {return nullptr;                   }
     }
 }
 
-int createStack(Stack_t *stack, size_t capacity)
+static const char *StackStatusToString(StackStatus status)
 {
-    int stackStatus = checkStack(stack);
+    switch(status)
+    {
+        case STACK_NOT_CONSTRUCTED: {return "STACK_NOT_CONSTRUCTED";}
+        case STACK_CONSTRUCTED:     {return "STACK_CONSTRUCTED";    }
+        case STACK_DESTROYED:       {return "STACK_DESTROYED";      }
+        default:                    {return nullptr;                }
+    }
+}
+
+StackErrorCode StackCtor(stack_t *stack, size_t capacity)
+{
+    StackErrorCode stackStatus = GetStackStatus(stack);
     if (stackStatus != STACK_NO_ERROR)
     {
         return stackStatus;
     }
 
-    stack->capacity = capacity;
+    if (stack->status != STACK_NOT_CONSTRUCTED)
+    {
+        printf("1\n");
+        return STACK_ALREADY_CONSTRUCTED;
+    }
+
     stack->data = (stackData_t *) calloc(capacity, sizeof(stackData_t));
     if (stack->data == nullptr)
     {
-        dump(stack);
-        return STACK_DATA_REALLOC_ERROR;
+        return STACK_DATA_CALLOC_ERROR;
     }
+    stack->capacity = capacity;
     stack->size = 0;
+    stack->status = STACK_CONSTRUCTED;
 
-    dump(stack);
+    dump(stack, "StackCtor");
     return stackStatus;
 }
 
-static int reallocStack(Stack_t *stack, size_t new_capacity)
+static StackErrorCode reallocStack(stack_t *stack, size_t newCapacity)
 {
-    int stackStatus = checkStack(stack);
+    assert(newCapacity > 0);
+
+    StackErrorCode stackStatus = GetStackStatus(stack);
     if (stackStatus != STACK_NO_ERROR)
     {
         return stackStatus;
     }
 
-    stackData_t *data = stack->data;
-    stack->data = (stackData_t *)realloc(stack->data, new_capacity * sizeof(stackData_t));
-    if (stack->data == nullptr)
+    stackData_t *data = (stackData_t *)realloc(stack->data, newCapacity * sizeof(stackData_t));
+    if (data == nullptr)
     {
-        free(data);
         return STACK_DATA_REALLOC_ERROR;
     }
-    stack->capacity = new_capacity;
+
+    stack->data = data;
+    stack->capacity = newCapacity;
+    dump(stack, "reallocStack");
     return stackStatus;
 }
 
-int clearStack(Stack_t *stack)
+StackErrorCode StackDtor(stack_t *stack)
 {
-    int stackStatus = checkStack(stack);
+    StackErrorCode stackStatus = GetStackStatus(stack);
     if (stackStatus == STACK_NO_ERROR)
     {
+        free(stack->data);
         stack->size = 0;
+        stack->data = (stackData_t*)ERR_PTR;
+        stack->capacity = 0;
+        stack->status = STACK_DESTROYED;
     }
-
-    dump(stack);
+    dump(stack, "StackDtor");
     return stackStatus;
 }
 
-int push(Stack_t *stack, stackData_t element)
+StackErrorCode StackPush(stack_t *stack, stackData_t element)
 {
-    int stackStatus = checkStack(stack);
+    StackErrorCode stackStatus = GetStackStatus(stack);
     if (stackStatus != STACK_NO_ERROR)
     {
-        dump(stack);
         return stackStatus;
     }
 
     if (stack->size >= stack->capacity)
     {
-        size_t new_capacity = (stack->capacity + 1) * STACK_MEMORY_EXPAND;
-        stackStatus = reallocStack(stack, new_capacity);
+        size_t newCapacity = (stack->capacity) * STACK_MEMORY_EXPAND;
+        stackStatus = reallocStack(stack, newCapacity);
         if (stackStatus != STACK_NO_ERROR)
         {
-            dump(stack);
             return stackStatus;
         }
     }
@@ -120,16 +154,15 @@ int push(Stack_t *stack, stackData_t element)
     stack->data[stack->size] = element;
     stack->size++;
 
-    dump(stack);
+    dump(stack, "StackPush");
     return stackStatus;
 }
 
-int pop(Stack_t *stack, stackData_t *top)
+StackErrorCode StackPop(stack_t *stack, stackData_t *top)
 {
-    int stackStatus = checkStack(stack);
+    StackErrorCode stackStatus = GetStackStatus(stack);
     if (stackStatus != STACK_NO_ERROR)
     {
-        dump(stack);
         return stackStatus;
     }
 
@@ -137,44 +170,71 @@ int pop(Stack_t *stack, stackData_t *top)
     {
         *top = stack->data[stack->size - 1];
         stack->size--;
-        if (stack->size != 0 && stack->capacity / STACK_MEMORY_SHRINK > stack->size)
+
+        if (stack->size != 0 && (stack->capacity / STACK_MEMORY_SHRINK > stack->size))
         {
-            size_t new_capacity = (stack->capacity) / STACK_MEMORY_SHRINK;
-            stackStatus = reallocStack(stack, new_capacity);
-            dump(stack);
+            size_t newCapacity = (stack->capacity) / STACK_MEMORY_SHRINK;
+            stackStatus = reallocStack(stack, newCapacity);
             return stackStatus;
         }
-        dump(stack);
+
+        dump(stack, "StackPop");
+
         return STACK_NO_ERROR;
     }
     else
     {
-        dump(stack);
-        return POP_FROM_EMPTY_STACK;
+        return STACK_POP_FROM_EMPTY;
     }
 }
 
-void dump(Stack_t *stack)
+size_t getStackCapacity(stack_t *stack)
 {
+    int stackStatus = GetStackStatus(stack);
+    if (stackStatus != STACK_NO_ERROR)
+    {
+        return stackStatus;
+    }
+
+    return stack->capacity;
+}
+
+size_t getStackSize(stack_t *stack)
+{
+    int stackStatus = GetStackStatus(stack);
+    if (stackStatus != STACK_NO_ERROR)
+    {
+        return stackStatus;
+    }
+
+    return stack->size;
+}
+
+static void dump(stack_t *stack, const char *nameFunction)
+{
+    assert(stack != nullptr);
+
     foutput = fopen("output.txt", "a");
 
-    int stackStatus = checkStack(stack);
+    StackErrorCode stackStatus = GetStackStatus(stack);
 
     fprintf(foutput, "================================================================================\n");
-    fprintf(foutput, "%s\n", getStackError(stackStatus));
-    fprintf(foutput, "Stack address: %llu\n", stack);
-    fprintf(foutput, "Capacity addres: %llu\n", &(stack->capacity));
+    fprintf(foutput, "dump called in %s\n", nameFunction);
+    fprintf(foutput, "%s\n", StackErrorToString(stackStatus));
+    fprintf(foutput, "%s\n", StackStatusToString(stack->status));
+    fprintf(foutput, "Stack address: 0x%p\n", stack);
+    fprintf(foutput, "Capacity address: 0x%p\n", &(stack->capacity));
     fprintf(foutput, "Capacity: %Iu\n", stack->capacity);
-    fprintf(foutput, "size addres: %llu\n", &(stack->size));
+    fprintf(foutput, "size address: 0x%p\n", &(stack->size));
     fprintf(foutput, "size: %Iu\n", stack->size);
-    fprintf(foutput, "Data address: %llu\nData:\n", stack->data);
+    fprintf(foutput, "Data address: 0x%p\nData:\n", stack->data);
 
-
-    for (size_t i = 0; i < stack->size; i++)
+    for (size_t i = 0; i < stack->capacity; i++)
     {
         fprintf(foutput, "[%Iu] - %d\n", i, stack->data[i]);
     }
+
     fprintf(foutput, "--------------------------------------------------------------------------------\n");
 
-    return;
+    fclose(foutput);
 }
