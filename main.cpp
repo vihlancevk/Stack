@@ -4,7 +4,7 @@
 int main()
 {
     stack_t stack = {};
-    int stackStatus = StackCtor(&stack, 10);
+    int stackStatus = STACKCTOR_(&stack, 10, "stack");
     if (stackStatus != STACK_NO_ERROR)
     {
         return stackStatus;
