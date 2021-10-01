@@ -3,13 +3,14 @@
 
 int main()
 {
+    clearOutputFile();
+
     stack_t stack = {};
-    int stackStatus = STACKCTOR_(&stack, 10, "stack");
+    int stackStatus = STACKCTOR_(&stack, 10);
     if (stackStatus != STACK_NO_ERROR)
     {
         return stackStatus;
     }
-
     for (int i = 0; i < 15; i++)
     {
         if (StackPush(&stack, i) != STACK_NO_ERROR)
