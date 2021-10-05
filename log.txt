@@ -1,0 +1,424 @@
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackCtor(stack_t*, size_t) at /home/kostya/StructStack/stack.cpp(218)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 0
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 0
+			(int) [1] - 0
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPush(stack_t*, stackData_t) at /home/kostya/StructStack/stack.cpp(329)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 0
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 0
+			(int) [1] - 0
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPush(stack_t*, stackData_t) at /home/kostya/StructStack/stack.cpp(349)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 0
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPush(stack_t*, stackData_t) at /home/kostya/StructStack/stack.cpp(329)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 0
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPush(stack_t*, stackData_t) at /home/kostya/StructStack/stack.cpp(349)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 2
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 5
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackElemOperation(stack_t*, const char*) at /home/kostya/StructStack/stack.cpp(390)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 2
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 5
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPop(stack_t*, stackData_t*) at /home/kostya/StructStack/stack.cpp(355)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 2
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 5
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode RecallocStack(stack_t*, size_t) at /home/kostya/StructStack/stack.cpp(281)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 5
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode ReallocStack(stack_t*, size_t) at /home/kostya/StructStack/stack.cpp(243)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 10
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 5
+			(int) [2] - 0
+			(int) [3] - 0
+			(int) [4] - 0
+			(int) [5] - 0
+			(int) [6] - 0
+			(int) [7] - 0
+			(int) [8] - 0
+			(int) [9] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode ReallocStack(stack_t*, size_t) at /home/kostya/StructStack/stack.cpp(272)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 5
+			(int) [2] - 0
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode RecallocStack(stack_t*, size_t) at /home/kostya/StructStack/stack.cpp(292)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPop(stack_t*, stackData_t*) at /home/kostya/StructStack/stack.cpp(372)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPop(stack_t*, stackData_t*) at /home/kostya/StructStack/stack.cpp(355)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPop(stack_t*, stackData_t*) at /home/kostya/StructStack/stack.cpp(376)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 0
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPush(stack_t*, stackData_t) at /home/kostya/StructStack/stack.cpp(329)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 0
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 10
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPush(stack_t*, stackData_t) at /home/kostya/StructStack/stack.cpp(349)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 15
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackElemOperation(stack_t*, const char*) at /home/kostya/StructStack/stack.cpp(427)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 15
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPop(stack_t*, stackData_t*) at /home/kostya/StructStack/stack.cpp(355)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 1
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 15
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------
+================================================================================
+Stack <int> [0x7ffe8e9bdbe0] [&stack] at /home/kostya/StructStack/main.cpp(16) called from StackErrorCode StackPop(stack_t*, stackData_t*) at /home/kostya/StructStack/stack.cpp(376)
+{
+	STACK_NO_ERROR
+	STACK_CONSTRUCTED
+	{
+		size = 0
+		capacity = 3
+		data[0x55f7c0aa3090]
+		{
+			DATA_LEFT_CANARY = 72353405800811825
+			(int) [0] - 15
+			(int) [1] - 1488
+			(int) [2] - 1488
+			DATA_RIGHT_CANARY = 144690275825749298
+		}
+	}
+}
+--------------------------------------------------------------------------------

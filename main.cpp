@@ -1,34 +1,46 @@
-#include <stdio.h>
 #include "stack.h"
+#include "fileOperations.h"
+
+const char *INPUT_FILE = "input.txt";
+const char *OUTPUT_FILE = "output.txt";
 
 int main()
 {
-    CLEAR_OUTPUT_FILE();
+    CLEAR_LOG_FILE();
+
+    int linesCount = 0;
+    char *str = nullptr;
+    Line *lines = (Line *) fillStructLine(INPUT_FILE, &linesCount, str);
 
     stack_t stack = {};
-    int stackStatus = STACKCTOR_(&stack, 10);
-    if (stackStatus != STACK_NO_ERROR)
+    int stackError = STACKCTOR_(&stack, 10);
+    IS_STACK_ERROR_(&stack, stackError);
+
+    char stackOperation[20] = {};
+    stackData_t elem = 0;
+    for (int i = 0; i < linesCount; i++)
     {
-        return stackStatus;
-    }
-    for (int i = 0; i < 15; i++)
-    {
-        if (StackPush(&stack, i) != STACK_NO_ERROR)
+        sscanf(lines[i].str, "%s %d", stackOperation, &elem);
+        if (strcmp(stackOperation, "push") == 0)
         {
-            return stackStatus;
+            stackError = StackPush(&stack, elem);
+            IS_STACK_ERROR_(&stack, stackError);
+        }
+        else
+        {
+            stackError = StackElemOperation(&stack, (const char*)stackOperation);
+            IS_STACK_ERROR_(&stack, stackError);
         }
     }
 
-    int top = 0;
-    for (int i = 0; i < 10000; i++)
-    {
-        stackStatus = StackPop(&stack, &top);
+    FILE *foutput = fopen(OUTPUT_FILE, "w");
+    assert(foutput != nullptr);
 
-        if (stackStatus != STACK_NO_ERROR)
-        {
-            return stackStatus;
-        }
-    }
+    stackError = StackPop(&stack, &elem);
+    IS_STACK_ERROR_(&stack, stackError);
+    printf("%d\n", elem);
 
-    return stackStatus;
+    fclose(foutput);
+
+    return stackError;
 }

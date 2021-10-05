@@ -1,10 +1,18 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include <stdio.h>
 #include <stdint.h>
 
 #define DEBUG
 //#undef DEBUG
+
+#define IS_STACK_ERROR_(stack, stackError)    \
+    if (stackError != STACK_NO_ERROR)         \
+    {                                         \
+        ASSERT_OK(stack);                     \
+        return stackError;                    \
+    }
 
 typedef int stackData_t;
 
@@ -46,6 +54,7 @@ enum StackErrorCode
     STACK_DATA_CALLOC_ERROR,
     STACK_DATA_REALLOC_ERROR,
     STACK_CAPACITY_LESS_SIZE,
+    STACK_NOT_SUPPORT_OPERATION,
 
     #ifdef DEBUG
         STACK_LEFT_CANARY_DIED,
@@ -60,13 +69,13 @@ enum StackErrorCode
 
 //{-------------------------------------------------------------------
 
-void ClearOutputFile();
+void ClearLogFile();
 
 #ifdef DEBUG
-    #define CLEAR_OUTPUT_FILE() \
-    ClearOutputFile()
+    #define CLEAR_LOG_FILE() \
+    ClearLogFile()
 #else
-    #define CLEAR_OUTPUT_FILE() \
+    #define CLEAR_LOG_FILE() \
 
 #endif // DEBUG
 
@@ -116,6 +125,8 @@ StackErrorCode StackDtor(stack_t *stack);
 StackErrorCode StackPush(stack_t *stack, int element);
 
 StackErrorCode StackPop(stack_t *stack, int *top);
+
+StackErrorCode StackElemOperation(stack_t *stack, const char *operation);
 
 size_t GetStackCapacity(stack_t *stack);
 

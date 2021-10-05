@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <typeinfo>
 #include <cxxabi.h>
@@ -17,7 +18,7 @@
 
 const size_t STACK_MEMORY_EXPAND = 2;
 const size_t STACK_MEMORY_SHRINK = 3;
-const char *NAME_OUTPUT_FILE = "output.txt";
+const char *NAME_OUTPUT_FILE = "log.txt";
 const void *const ERR_PTR = (void*)(1000-7);
 const void *const ERR_CALLOC_PTR = (void*)(300);
 const void *const ERR_REALLOC_PTR = (void*)(666);
@@ -26,7 +27,7 @@ const stackData_t RECALLOC_VALUE = 1488;
 #ifdef DEBUG
     FILE *foutput = nullptr;
 
-    void ClearOutputFile()
+    void ClearLogFile()
     {
         foutput = fopen(NAME_OUTPUT_FILE, "w");
         fclose(foutput);
@@ -243,11 +244,8 @@ static StackErrorCode ReallocStack(stack_t *stack, size_t newCapacity)
 
     assert(newCapacity > 0);
 
-    StackErrorCode stackStatus = GetStackError(stack);
-    if (stackStatus != STACK_NO_ERROR)
-    {
-        return stackStatus;
-    }
+    StackErrorCode stackError = GetStackError(stack);
+    IS_STACK_ERROR_(stack, stackError);
 
     #ifdef DEBUG
         stackData_t *data = (stackData_t *)realloc(stack->data, newCapacity * sizeof(stackData_t) + 2 * sizeof(uint64_t));
@@ -272,7 +270,7 @@ static StackErrorCode ReallocStack(stack_t *stack, size_t newCapacity)
     STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
-    return stackStatus;
+    return stackError;
 }
 
 //}-------------------------------------------------------------------
@@ -282,7 +280,7 @@ static StackErrorCode ReallocStack(stack_t *stack, size_t newCapacity)
     {
         ASSERT_OK(stack);
 
-        StackErrorCode status = ReallocStack(stack, newCapacity);
+        StackErrorCode stackError = ReallocStack(stack, newCapacity);
 
         for (size_t i = stack->size; i < stack->capacity; i++)
         {
@@ -292,7 +290,7 @@ static StackErrorCode ReallocStack(stack_t *stack, size_t newCapacity)
         STACK_AND_DATA_HASHING_(stack);
 
         ASSERT_OK(stack);
-        return status;
+        return stackError;
     }
 #endif // DEBUG
 
@@ -310,8 +308,8 @@ StackErrorCode StackDtor(stack_t *stack)
 {
     ASSERT_OK(stack);
 
-    StackErrorCode stackStatus = GetStackError(stack);
-    if (stackStatus == STACK_NO_ERROR)
+    StackErrorCode stackError = GetStackError(stack);
+    if (stackError == STACK_NO_ERROR)
     {
         free(stack->data);
         stack->size = 0;
@@ -323,28 +321,24 @@ StackErrorCode StackDtor(stack_t *stack)
     STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
-    return stackStatus;
+    return stackError;
 }
 
 StackErrorCode StackPush(stack_t *stack, stackData_t element)
 {
     ASSERT_OK(stack);
 
-    StackErrorCode stackStatus = GetStackError(stack);
-    if (stackStatus != STACK_NO_ERROR)
-    {
-        ASSERT_OK(stack);
-        return stackStatus;
-    }
+    StackErrorCode stackError = GetStackError(stack);
+    IS_STACK_ERROR_(stack, stackError);
 
     if (stack->size >= stack->capacity)
     {
         size_t newCapacity = (stack->capacity) * STACK_MEMORY_EXPAND;
-        stackStatus = RECALLOC_STACK_(stack, newCapacity);
-        if (stackStatus != STACK_NO_ERROR)
+        stackError = RECALLOC_STACK_(stack, newCapacity);
+        if (stackError != STACK_NO_ERROR)
         {
             ASSERT_OK(stack);
-            return stackStatus;
+            return stackError;
         }
     }
 
@@ -353,7 +347,7 @@ StackErrorCode StackPush(stack_t *stack, stackData_t element)
     STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
-    return stackStatus;
+    return stackError;
 }
 
 StackErrorCode StackPop(stack_t *stack, stackData_t *top)
@@ -362,12 +356,8 @@ StackErrorCode StackPop(stack_t *stack, stackData_t *top)
 
     assert(top != nullptr);
 
-    StackErrorCode stackStatus = GetStackError(stack);
-    if (stackStatus != STACK_NO_ERROR)
-    {
-        ASSERT_OK(stack);
-        return stackStatus;
-    }
+    StackErrorCode stackError = GetStackError(stack);
+    IS_STACK_ERROR_(stack, stackError);
 
     if (stack->size > 0)
     {
@@ -378,9 +368,9 @@ StackErrorCode StackPop(stack_t *stack, stackData_t *top)
         if (stack->size != 0 && (stack->capacity / STACK_MEMORY_SHRINK >= stack->size))
         {
             size_t newCapacity = (stack->capacity) / STACK_MEMORY_SHRINK;
-            stackStatus = RECALLOC_STACK_(stack, newCapacity);
+            stackError = RECALLOC_STACK_(stack, newCapacity);
             ASSERT_OK(stack);
-            return stackStatus;
+            return stackError;
         }
 
         ASSERT_OK(stack);
@@ -395,15 +385,55 @@ StackErrorCode StackPop(stack_t *stack, stackData_t *top)
     }
 }
 
+StackErrorCode StackElemOperation(stack_t *stack, const char *operation)
+{
+    ASSERT_OK(stack);
+
+    StackErrorCode stackError = GetStackError(stack);
+    IS_STACK_ERROR_(stack, stackError);
+
+    stackData_t elem1 = 0;
+    stackError = StackPop(stack, &elem1);
+    IS_STACK_ERROR_(stack, stackError);
+
+    stackData_t elem2 = 0;
+    stackError = StackPop(stack, &elem2);
+    IS_STACK_ERROR_(stack, stackError);
+
+    if (strcmp(operation, "add") == 0)
+    {
+        stackError = StackPush(stack, elem1 + elem2);
+    }
+    else if (strcmp(operation, "sub") == 0)
+    {
+        stackError = StackPush(stack, elem1 - elem2);
+    }
+    else if (strcmp(operation, "mul") == 0)
+    {
+        stackError = StackPush(stack, elem1 * elem2);
+    }
+    else if (strcmp(operation, "div") == 0)
+    {
+        stackError = StackPush(stack, elem1 / elem2);
+    }
+    else
+    {
+        return STACK_NOT_SUPPORT_OPERATION;
+    }
+
+    IS_STACK_ERROR_(stack, stackError);
+    STACK_AND_DATA_HASHING_(stack);
+
+    ASSERT_OK(stack);
+    return stackError;
+}
+
 size_t GetStackCapacity(stack_t *stack)
 {
     ASSERT_OK(stack);
 
-    int stackStatus = GetStackError(stack);
-    if (stackStatus != STACK_NO_ERROR)
-    {
-        return stackStatus;
-    }
+    StackErrorCode stackError = GetStackError(stack);
+    IS_STACK_ERROR_(stack, stackError);
 
     return stack->capacity;
 }
@@ -412,11 +442,8 @@ size_t GetStackSize(stack_t *stack)
 {
     ASSERT_OK(stack);
 
-    int stackStatus = GetStackError(stack);
-    if (stackStatus != STACK_NO_ERROR)
-    {
-        return stackStatus;
-    }
+    StackErrorCode stackError = GetStackError(stack);
+    IS_STACK_ERROR_(stack, stackError);
 
     return stack->size;
 }
@@ -430,7 +457,7 @@ size_t GetStackSize(stack_t *stack)
 
         foutput = fopen(NAME_OUTPUT_FILE, "a");
 
-        StackErrorCode stackStatus = GetStackError(stack);
+        StackErrorCode stackError = GetStackError(stack);
 
         int status = 0;
         char *type = abi::__cxa_demangle(typeid(stack->data[0]).name(), 0, 0, &status);
@@ -446,7 +473,7 @@ size_t GetStackSize(stack_t *stack)
         fprintf(foutput, "[%s] ", stack->nameStack);
         fprintf(foutput, "at %s(%zu) ", stack->filePath, stack->line);
         fprintf(foutput, "called from %s at %s(%zu)\n{\n", nameFunction, filePath, line);
-        fprintf(foutput, "\t%s\n", StackErrorToString(stackStatus));
+        fprintf(foutput, "\t%s\n", StackErrorToString(stackError));
         fprintf(foutput, "\t%s\n\t{\n", StackStatusToString(stack->status));
         fprintf(foutput, "\t\tsize = %zu\n", stack->size);
         fprintf(foutput, "\t\tcapacity = %zu\n", stack->capacity);
