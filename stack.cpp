@@ -9,10 +9,10 @@
 //#undef DEBUG
 
 #ifdef DEBUG
-    const unsigned long long int LEFT_STACK_CANARY  = 0xBADDED32;
-    const unsigned long long int RIGHT_STACK_CANARY = 0XBADDED132;
-    const unsigned long long int LEFT_DATA_CANARY = 0x1DCB;
-    const unsigned long long int RIGHT_DATA_CANARY = 0x2DCB;
+    const uint64_t STACK_LEFT_CANARY  = *(uint64_t*)"B\xA\xD\xD\xE\xD\x3\x2";
+    const uint64_t STACK_RIGHT_CANARY = *(uint64_t*)"D\xE\xD\xB\xA\xD\x2\x3";
+    const uint64_t DATA_LEFT_CANARY = *(uint64_t*)"1\xD\xC\xB\xA\xD\x1\x1";
+    const uint64_t DATA_RIGHT_CANARY = *(uint64_t*)"2\xD\xC\xD\xA\xB\x2\x2";
 #endif // DEBUG
 
 const size_t STACK_MEMORY_EXPAND = 2;
@@ -23,25 +23,27 @@ const void *const ERR_CALLOC_PTR = (void*)(300);
 const void *const ERR_REALLOC_PTR = (void*)(666);
 const stackData_t RECALLOC_VALUE = 1488;
 
-FILE *foutput = nullptr;
+#ifdef DEBUG
+    FILE *foutput = nullptr;
 
-void clearOutputFile()
-{
-    foutput = fopen(NAME_OUTPUT_FILE, "w");
-    fclose(foutput);
-}
+    void ClearOutputFile()
+    {
+        foutput = fopen(NAME_OUTPUT_FILE, "w");
+        fclose(foutput);
+    }
+#endif // DEBUG
 
-static unsigned long long int HashRot13(const void *elem, size_t size)
+static uint64_t HashRot13(const void *elem, size_t size)
 {
     assert(elem != nullptr);
 
-    unsigned long long int hash = 0;
+    uint64_t hash = 0;
 
     char *buffer = (char*)elem;
 
-    for(int i = 0; i < size; i++)
+    for(size_t i = 0; i < size; i++)
     {
-        hash += (unsigned char)buffer[i];
+        hash += (uint64_t)buffer[i];
         hash -= (hash << 13) | (hash >> 19);
     }
 
@@ -64,10 +66,10 @@ static unsigned long long int HashRot13(const void *elem, size_t size)
 #endif // DEBUG
 
 #ifdef DEBUG
-    #define STACKANDDATAHASHING_(stack) \
+    #define STACK_AND_DATA_HASHING_(stack) \
         StackAndDataHashing(stack)
 #else
-    #define STACKANDDATAHASHING_(stack) \
+    #define STACK_AND_DATA_HASHING_(stack) \
 
 #endif // DEBUG
 
@@ -81,14 +83,14 @@ StackErrorCode GetStackError(stack_t *stack)
     }
 
     #ifdef DEBUG
-        if (stack->leftStackCanary != (LEFT_STACK_CANARY ^ (size_t)stack))
+        if (stack->leftStackCanary != (STACK_LEFT_CANARY ^ (size_t)stack))
         {
-            return LEFT_STACK_CANARY_DIED;
+            return STACK_LEFT_CANARY_DIED;
         }
 
-        if (stack->rightStackCanary != (RIGHT_STACK_CANARY ^ (size_t)stack))
+        if (stack->rightStackCanary != (STACK_RIGHT_CANARY ^ (size_t)stack))
         {
-            return RIGHT_STACK_CANARY_DIED;
+            return STACK_RIGHT_CANARY_DIED;
         }
 
         if (stack->nameStack == nullptr)
@@ -98,22 +100,22 @@ StackErrorCode GetStackError(stack_t *stack)
 
         if (stack->hashStack != HashRot13(stack, sizeof((*stack)) - sizeof(stack->hashStack) - sizeof(stack->hashData)))
         {
-            return HASH_STACK_DAMAGED;
+            return STACK_HASH_DAMAGED;
         }
 
         if (stack->hashData != HashRot13(stack->data, sizeof(*(stack->data)) * stack->capacity))
         {
-            return HASH_DATA_DAMAGED;
+            return DATA_HASH_DAMAGED;
         }
 
-        if (*(unsigned long long int*)(stack->data) != LEFT_DATA_CANARY)
+        if (*(uint64_t*)(stack->data) != DATA_LEFT_CANARY)
         {
-            return LEFT_DATA_CANARY_DIED;
+            return DATA_LEFT_CANARY_DIED;
         }
 
-        if (*(unsigned long long int*)((char*)(stack->data) + sizeof(unsigned long long int) + sizeof(stackData_t) * stack->capacity) != RIGHT_DATA_CANARY)
+        if (*(uint64_t*)((char*)(stack->data) + sizeof(uint64_t) + sizeof(stackData_t) * stack->capacity) != DATA_RIGHT_CANARY)
         {
-            return RIGHT_DATA_CANARY_DIED;
+            return DATA_RIGHT_CANARY_DIED;
         }
 
     #endif // DEBUG
@@ -154,13 +156,13 @@ static const char *StackErrorToString(StackErrorCode error)
         GET_DESCR_(STACK_ALREADY_CONSTRUCTED)
 
         #ifdef DEBUG
-            GET_DESCR_(LEFT_STACK_CANARY_DIED)
-            GET_DESCR_(RIGHT_STACK_CANARY_DIED)
+            GET_DESCR_(STACK_LEFT_CANARY_DIED)
+            GET_DESCR_(STACK_RIGHT_CANARY_DIED)
             GET_DESCR_(STACK_NO_NAME)
-            GET_DESCR_(HASH_STACK_DAMAGED)
-            GET_DESCR_(HASH_DATA_DAMAGED)
-            GET_DESCR_(LEFT_DATA_CANARY_DIED)
-            GET_DESCR_(RIGHT_DATA_CANARY_DIED)
+            GET_DESCR_(STACK_HASH_DAMAGED)
+            GET_DESCR_(DATA_HASH_DAMAGED)
+            GET_DESCR_(DATA_LEFT_CANARY_DIED)
+            GET_DESCR_(DATA_RIGHT_CANARY_DIED)
         #endif // DEBUG
 
         GET_DESCR_(STACK_DATA_DESTROY)
@@ -197,20 +199,20 @@ StackErrorCode StackCtor(stack_t *stack, size_t capacity)
         return STACK_ALREADY_CONSTRUCTED;
     }
 
-    stack->data = (stackData_t *) calloc(1, sizeof(stackData_t) * capacity + 2 * sizeof(unsigned long long int));
+    stack->data = (stackData_t *) calloc(1, sizeof(stackData_t) * capacity + 2 * sizeof(uint64_t));
     if (stack->data == nullptr)
     {
         return STACK_DATA_CALLOC_ERROR;
     }
     #ifdef DEBUG
-        *(unsigned long long int*)(stack->data) = LEFT_DATA_CANARY;
-        *(unsigned long long int*)((char*)(stack->data) + sizeof(unsigned long long int) + sizeof(stackData_t) * capacity) = RIGHT_DATA_CANARY;
+        *(uint64_t*)(stack->data) = DATA_LEFT_CANARY;
+        *(uint64_t*)((char*)(stack->data) + sizeof(uint64_t) + sizeof(stackData_t) * capacity) = DATA_RIGHT_CANARY;
     #endif // DEBUG
 
     stack->capacity = capacity;
     stack->size = 0;
     stack->status = STACK_CONSTRUCTED;
-    STACKANDDATAHASHING_(stack);
+    STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
     return STACK_NO_ERROR;
@@ -222,8 +224,8 @@ StackErrorCode StackCtor(stack_t *stack, size_t capacity)
         assert(stack != nullptr);
 
         stack->nameStack = nameStack;
-        stack->leftStackCanary = LEFT_STACK_CANARY ^ (size_t)stack;
-        stack->rightStackCanary = RIGHT_STACK_CANARY ^ (size_t)stack;
+        stack->leftStackCanary = STACK_LEFT_CANARY ^ (size_t)stack;
+        stack->rightStackCanary = STACK_RIGHT_CANARY ^ (size_t)stack;
         stack->filePath = filePath;
         stack->line = line;
 
@@ -235,7 +237,7 @@ StackErrorCode StackCtor(stack_t *stack, size_t capacity)
 
 //{-------------------------------------------------------------------
 
-static StackErrorCode reallocStack(stack_t *stack, size_t newCapacity)
+static StackErrorCode ReallocStack(stack_t *stack, size_t newCapacity)
 {
     ASSERT_OK(stack);
 
@@ -247,19 +249,27 @@ static StackErrorCode reallocStack(stack_t *stack, size_t newCapacity)
         return stackStatus;
     }
 
-    stackData_t *data = (stackData_t *)realloc(stack->data, newCapacity * sizeof(stackData_t) + 2 * sizeof(unsigned long long int));
-    if (data == nullptr)
-    {
-        return STACK_DATA_REALLOC_ERROR;
-    }
+    #ifdef DEBUG
+        stackData_t *data = (stackData_t *)realloc(stack->data, newCapacity * sizeof(stackData_t) + 2 * sizeof(uint64_t));
+        if (data == nullptr)
+        {
+            return STACK_DATA_REALLOC_ERROR;
+        }
+    #else
+        stackData_t *data = (stackData_t *)realloc(stack->data, newCapacity * sizeof(stackData_t));
+        if (data == nullptr)
+        {
+            return STACK_DATA_REALLOC_ERROR;
+        }
+    #endif // DEBUG
 
     stack->data = data;
     stack->capacity = newCapacity;
     #ifdef DEBUG
-        *(unsigned long long int*)(stack->data) = LEFT_DATA_CANARY;
-        *(unsigned long long int*)((char*)stack->data + sizeof(unsigned long long int) + sizeof(stackData_t) * stack->capacity) = RIGHT_DATA_CANARY;
+        *(uint64_t*)(stack->data) = DATA_LEFT_CANARY;
+        *(uint64_t*)((char*)stack->data + sizeof(uint64_t) + sizeof(stackData_t) * stack->capacity) = DATA_RIGHT_CANARY;
     #endif // DEBUG
-    STACKANDDATAHASHING_(stack);
+    STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
     return stackStatus;
@@ -268,18 +278,18 @@ static StackErrorCode reallocStack(stack_t *stack, size_t newCapacity)
 //}-------------------------------------------------------------------
 
 #ifdef DEBUG
-    static StackErrorCode recallocStack(stack_t *stack, size_t newCapacity)
+    static StackErrorCode RecallocStack(stack_t *stack, size_t newCapacity)
     {
         ASSERT_OK(stack);
 
-        StackErrorCode status = reallocStack(stack, newCapacity);
+        StackErrorCode status = ReallocStack(stack, newCapacity);
 
         for (size_t i = stack->size; i < stack->capacity; i++)
         {
-          ((stackData_t*)((char*)(stack->data) + sizeof(unsigned long long int)))[i] = RECALLOC_VALUE;
+          ((stackData_t*)((char*)(stack->data) + sizeof(uint64_t)))[i] = RECALLOC_VALUE;
         }
 
-        STACKANDDATAHASHING_(stack);
+        STACK_AND_DATA_HASHING_(stack);
 
         ASSERT_OK(stack);
         return status;
@@ -287,11 +297,11 @@ static StackErrorCode reallocStack(stack_t *stack, size_t newCapacity)
 #endif // DEBUG
 
 #ifdef DEBUG
-    #define REALLOCSTACK_(stack, newCapacity)        \
-        recallocStack(stack, newCapacity)
+    #define RECALLOC_STACK_(stack, newCapacity)        \
+        RecallocStack(stack, newCapacity)
 #else
-    #define REALLOCSTACK_(satck, newCapacity)        \
-        reallocStack(stack, newCapacity)
+    #define RECALLOC_STACK_(satck, newCapacity)        \
+        ReallocStack(stack, newCapacity)
 #endif // DEBUG
 
 //}-------------------------------------------------------------------
@@ -310,7 +320,7 @@ StackErrorCode StackDtor(stack_t *stack)
         stack->status = STACK_DESTROYED;
     }
 
-    STACKANDDATAHASHING_(stack);
+    STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
     return stackStatus;
@@ -330,7 +340,7 @@ StackErrorCode StackPush(stack_t *stack, stackData_t element)
     if (stack->size >= stack->capacity)
     {
         size_t newCapacity = (stack->capacity) * STACK_MEMORY_EXPAND;
-        stackStatus = REALLOCSTACK_(stack, newCapacity);
+        stackStatus = RECALLOC_STACK_(stack, newCapacity);
         if (stackStatus != STACK_NO_ERROR)
         {
             ASSERT_OK(stack);
@@ -338,9 +348,9 @@ StackErrorCode StackPush(stack_t *stack, stackData_t element)
         }
     }
 
-    ((stackData_t*)((char*)stack->data + sizeof(unsigned long long int)))[stack->size] = element;
+    ((stackData_t*)((char*)stack->data + sizeof(uint64_t)))[stack->size] = element;
     stack->size++;
-    STACKANDDATAHASHING_(stack);
+    STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
     return stackStatus;
@@ -361,14 +371,14 @@ StackErrorCode StackPop(stack_t *stack, stackData_t *top)
 
     if (stack->size > 0)
     {
-        *top = ((stackData_t*)((char*)stack->data + sizeof(unsigned long long int)))[stack->size - 1];
+        *top = ((stackData_t*)((char*)stack->data + sizeof(uint64_t)))[stack->size - 1];
         stack->size--;
-        STACKANDDATAHASHING_(stack);
+        STACK_AND_DATA_HASHING_(stack);
 
         if (stack->size != 0 && (stack->capacity / STACK_MEMORY_SHRINK >= stack->size))
         {
             size_t newCapacity = (stack->capacity) / STACK_MEMORY_SHRINK;
-            stackStatus = REALLOCSTACK_(stack, newCapacity);
+            stackStatus = RECALLOC_STACK_(stack, newCapacity);
             ASSERT_OK(stack);
             return stackStatus;
         }
@@ -378,14 +388,14 @@ StackErrorCode StackPop(stack_t *stack, stackData_t *top)
     }
     else
     {
-        STACKANDDATAHASHING_(stack);
+        STACK_AND_DATA_HASHING_(stack);
 
         ASSERT_OK(stack);
         return STACK_POP_FROM_EMPTY;
     }
 }
 
-size_t getStackCapacity(stack_t *stack)
+size_t GetStackCapacity(stack_t *stack)
 {
     ASSERT_OK(stack);
 
@@ -398,7 +408,7 @@ size_t getStackCapacity(stack_t *stack)
     return stack->capacity;
 }
 
-size_t getStackSize(stack_t *stack)
+size_t GetStackSize(stack_t *stack)
 {
     ASSERT_OK(stack);
 
@@ -414,7 +424,7 @@ size_t getStackSize(stack_t *stack)
 //{-------------------------------------------------------------------
 
 #ifdef DEBUG
-    void dump(stack_t *stack, const char *nameFunction, size_t line, const char *filePath)
+    void Dump(stack_t *stack, const char *nameFunction, size_t line, const char *filePath)
     {
         assert(filePath != nullptr);
 
@@ -434,23 +444,22 @@ size_t getStackSize(stack_t *stack)
         fprintf(foutput, "<%s> ", type);
         fprintf(foutput, "[%p] ", stack);
         fprintf(foutput, "[%s] ", stack->nameStack);
-        fprintf(foutput, "at %s(%Iu) ", stack->filePath, stack->line);
-        fprintf(foutput, "called from %s at %s(%Iu)\n{\n", nameFunction, filePath, line);
+        fprintf(foutput, "at %s(%zu) ", stack->filePath, stack->line);
+        fprintf(foutput, "called from %s at %s(%zu)\n{\n", nameFunction, filePath, line);
         fprintf(foutput, "\t%s\n", StackErrorToString(stackStatus));
         fprintf(foutput, "\t%s\n\t{\n", StackStatusToString(stack->status));
-        fprintf(foutput, "\t\tsize = %Iu\n", stack->size);
-        fprintf(foutput, "\t\tcapacity = %Iu\n", stack->capacity);
+        fprintf(foutput, "\t\tsize = %zu\n", stack->size);
+        fprintf(foutput, "\t\tcapacity = %zu\n", stack->capacity);
         fprintf(foutput, "\t\tdata[%p]\n", stack->data);
         fprintf(foutput, "\t\t{\n");
-
-        fprintf(foutput, "\t\t\tLEFT_DATA_CANARY = %lu\n", *(stackData_t*)stack->data);
+        fprintf(foutput, "\t\t\tDATA_LEFT_CANARY = %lu\n", *(uint64_t*)stack->data);
         for (size_t i = 0; i < stack->capacity; i++)
         {
-            fprintf(foutput, "\t\t\t(%s) [%Iu] - %d\n", type, i,
-            ((stackData_t*)((char*)stack->data + sizeof(unsigned long long int)))[i]);
+            fprintf(foutput, "\t\t\t(%s) [%zu] - %d\n", type, i,
+            ((stackData_t*)((char*)stack->data + sizeof(uint64_t)))[i]);
         }
-        fprintf(foutput, "\t\t\tRIGHT_DATA_CANARY = %lu\n",
-        *(unsigned long long int*)((char*)(stack->data) + sizeof(unsigned long long int) + sizeof(stackData_t) * stack->capacity));
+        fprintf(foutput, "\t\t\tDATA_RIGHT_CANARY = %lu\n",
+        *(uint64_t*)((char*)(stack->data) + sizeof(uint64_t) + sizeof(stackData_t) * stack->capacity));
 
         fprintf(foutput, "\t\t}\n");
         fprintf(foutput, "\t}\n");

@@ -3,7 +3,7 @@
 
 int main()
 {
-    clearOutputFile();
+    CLEAR_OUTPUT_FILE();
 
     stack_t stack = {};
     int stackStatus = STACKCTOR_(&stack, 10);

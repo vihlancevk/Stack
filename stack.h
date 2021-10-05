@@ -1,6 +1,8 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include <stdint.h>
+
 #define DEBUG
 //#undef DEBUG
 
@@ -16,7 +18,7 @@ enum StackStatus
 struct stack_t
 {
     #ifdef DEBUG
-        unsigned long long int leftStackCanary;
+        uint64_t leftStackCanary;
     #endif // DEBUG
 
     size_t capacity;
@@ -28,9 +30,9 @@ struct stack_t
         const char *nameStack;
         const char *filePath;
         size_t line;
-        unsigned long long int rightStackCanary;
-        unsigned long long int hashStack;
-        unsigned long long int hashData;
+        uint64_t rightStackCanary;
+        uint64_t hashStack;
+        uint64_t hashData;
     #endif // DEBUG
 };
 
@@ -46,34 +48,50 @@ enum StackErrorCode
     STACK_CAPACITY_LESS_SIZE,
 
     #ifdef DEBUG
-        LEFT_STACK_CANARY_DIED,
-        RIGHT_STACK_CANARY_DIED,
+        STACK_LEFT_CANARY_DIED,
+        STACK_RIGHT_CANARY_DIED,
         STACK_NO_NAME,
-        HASH_STACK_DAMAGED,
-        HASH_DATA_DAMAGED,
-        LEFT_DATA_CANARY_DIED,
-        RIGHT_DATA_CANARY_DIED
+        STACK_HASH_DAMAGED,
+        DATA_HASH_DAMAGED,
+        DATA_LEFT_CANARY_DIED,
+        DATA_RIGHT_CANARY_DIED
     #endif // DEBUG
 };
 
-void clearOutputFile();
+//{-------------------------------------------------------------------
+
+void ClearOutputFile();
+
+#ifdef DEBUG
+    #define CLEAR_OUTPUT_FILE() \
+    ClearOutputFile()
+#else
+    #define CLEAR_OUTPUT_FILE() \
+
+#endif // DEBUG
+
+//}-------------------------------------------------------------------
+
+//{-------------------------------------------------------------------
 
 StackErrorCode GetStackError(stack_t *stack);
 
 #ifdef DEBUG
-void dump(stack_t *stack, const char *nameFunction, size_t line, const char *filePath);
+void Dump(stack_t *stack, const char *nameFunction, size_t line, const char *filePath);
 #endif // DEBUG
 
 #ifdef DEBUG
     #define ASSERT_OK(stack)                                      \
         do{                                                       \
-        dump(stack, __PRETTY_FUNCTION__, __LINE__, __FILE__);     \
+        Dump(stack, __PRETTY_FUNCTION__, __LINE__, __FILE__);     \
         assert(GetStackError(stack) == STACK_NO_ERROR);           \
         }while(false);
 #else
     #define ASSERT_OK(stack)                                      \
 
 #endif //DEBUG
+
+//}-------------------------------------------------------------------
 
 //{-------------------------------------------------------------------
 
