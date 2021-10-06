@@ -130,20 +130,6 @@ void splitToLines(Line *lines, int linesCount, char *str)
     }
 }
 
-//================================================================================
-//! @brief Функция перевода позиции указателя в файле вывода на новую строку.
-//!
-//! @param [in] foutput файл, в котором нужно переместить позицию указателя
-//!             на новую строку.
-//--------------------------------------------------------------------------------
-
-static void moveToNextLine(FILE *foutput)
-{
-    assert(foutput != nullptr);
-
-    fputs("\n", foutput);
-}
-
 void *fillStructLine(const char* nameFile ,int *linesCount, char *str)
 {
     assert(nameFile != nullptr);
@@ -179,4 +165,24 @@ void *fillStructLine(const char* nameFile ,int *linesCount, char *str)
     fclose(finput);
 
     return lines;
+}
+
+StackErrorCode writeFile(FILE *foutput, Line *lines, int linesCount, stack_t *stack)
+{
+    assert(foutput != nullptr);
+    assert(lines != nullptr);
+    StackErrorCode stackError = GetStackError(stack);
+    IS_STACK_ERROR_(stack, stackError);
+
+    for (int i = 0; i < linesCount; i++)
+    {
+        fprintf(foutput, "%s\n", lines[i].str);
+    }
+
+    int elem = 0;
+    IS_STACK_ERROR_(stack, StackPop(stack, &elem));
+
+    fprintf(foutput, "%d\n", elem);
+
+    return stackError;
 }

@@ -1,0 +1,8 @@
+push 10
+push 5
+add
+push 7
+push 4
+sub
+div
+5

@@ -128,6 +128,8 @@ StackErrorCode StackPop(stack_t *stack, int *top);
 
 StackErrorCode StackElemOperation(stack_t *stack, const char *operation);
 
+StackErrorCode CalculatingExpression(stack_t *stack, const char *nameInputFile, FILE *foutput);
+
 size_t GetStackCapacity(stack_t *stack);
 
 size_t GetStackSize(stack_t *stack);

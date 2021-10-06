@@ -5,6 +5,7 @@
 #include <typeinfo>
 #include <cxxabi.h>
 #include "stack.h"
+#include "fileOperations.h"
 
 #define DEBUG
 //#undef DEBUG
@@ -402,19 +403,19 @@ StackErrorCode StackElemOperation(stack_t *stack, const char *operation)
 
     if (strcmp(operation, "add") == 0)
     {
-        stackError = StackPush(stack, elem1 + elem2);
+        stackError = StackPush(stack, elem2 + elem1);
     }
     else if (strcmp(operation, "sub") == 0)
     {
-        stackError = StackPush(stack, elem1 - elem2);
+        stackError = StackPush(stack, elem2 - elem1);
     }
     else if (strcmp(operation, "mul") == 0)
     {
-        stackError = StackPush(stack, elem1 * elem2);
+        stackError = StackPush(stack, elem2 * elem1);
     }
     else if (strcmp(operation, "div") == 0)
     {
-        stackError = StackPush(stack, elem1 / elem2);
+        stackError = StackPush(stack, elem2 / elem1);
     }
     else
     {
@@ -425,6 +426,45 @@ StackErrorCode StackElemOperation(stack_t *stack, const char *operation)
     STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
+    return stackError;
+}
+
+StackErrorCode CalculatingExpression(stack_t *stack, const char *nameInputFile, FILE *foutput)
+{
+    ASSERT_OK(stack);
+
+    StackErrorCode stackError = GetStackError(stack);
+    IS_STACK_ERROR_(stack, stackError);
+    assert(nameInputFile != nullptr);
+    assert(foutput != nullptr);
+
+    int linesCount = 0;
+    char *str = nullptr;
+    Line *lines = (Line *) fillStructLine(nameInputFile, &linesCount, str);
+
+    char stackOperation[20] = {};
+    stackData_t elem = 0;
+    for (int i = 0; i < linesCount; i++)
+    {
+        sscanf(lines[i].str, "%s %d", stackOperation, &elem);
+        if (strcmp(stackOperation, "push") == 0)
+        {
+            stackError = StackPush(stack, elem);
+            IS_STACK_ERROR_(stack, stackError);
+        }
+        else
+        {
+            stackError = StackElemOperation(stack, (const char*)stackOperation);
+            IS_STACK_ERROR_(stack, stackError);
+        }
+    }
+
+    stackError = writeFile(foutput, lines, linesCount, stack);
+    if (stackError != STACK_NO_ERROR)
+    {
+        return stackError;
+    }
+
     return stackError;
 }
 
