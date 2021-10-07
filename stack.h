@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include "codeOperations.h"
 
 #define DEBUG
 //#undef DEBUG
@@ -126,9 +127,7 @@ StackErrorCode StackPush(stack_t *stack, int element);
 
 StackErrorCode StackPop(stack_t *stack, int *top);
 
-StackErrorCode StackElemOperation(stack_t *stack, const char *operation);
-
-StackErrorCode CalculatingExpression(stack_t *stack, const char *nameInputFile, FILE *foutput);
+StackErrorCode StackElemOperation(stack_t *stack, CodeOperation codeOperation);
 
 size_t GetStackCapacity(stack_t *stack);
 

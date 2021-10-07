@@ -11,15 +11,15 @@
 //#undef DEBUG
 
 #ifdef DEBUG
-    const uint64_t STACK_LEFT_CANARY  = *(uint64_t*)"B\xA\xD\xD\xE\xD\x3\x2";
-    const uint64_t STACK_RIGHT_CANARY = *(uint64_t*)"D\xE\xD\xB\xA\xD\x2\x3";
-    const uint64_t DATA_LEFT_CANARY = *(uint64_t*)"1\xD\xC\xB\xA\xD\x1\x1";
-    const uint64_t DATA_RIGHT_CANARY = *(uint64_t*)"2\xD\xC\xD\xA\xB\x2\x2";
+    const uint64_t STACK_LEFT_CANARY  = 0xBBAADDDDEEDD3322;
+    const uint64_t STACK_RIGHT_CANARY = 0xBBAADDDDEEDD2233;
+    const uint64_t DATA_LEFT_CANARY   = 0x11DDCCBBAADD1111;
+    const uint64_t DATA_RIGHT_CANARY  = 0x22DDCCDDAABB2222;
 #endif // DEBUG
 
 const size_t STACK_MEMORY_EXPAND = 2;
 const size_t STACK_MEMORY_SHRINK = 3;
-const char *NAME_OUTPUT_FILE = "log.txt";
+const char *NAME_LOG_FILE = "log.txt";
 const void *const ERR_PTR = (void*)(1000-7);
 const void *const ERR_CALLOC_PTR = (void*)(300);
 const void *const ERR_REALLOC_PTR = (void*)(666);
@@ -30,7 +30,7 @@ const stackData_t RECALLOC_VALUE = 1488;
 
     void ClearLogFile()
     {
-        foutput = fopen(NAME_OUTPUT_FILE, "w");
+        foutput = fopen(NAME_LOG_FILE, "w");
         fclose(foutput);
     }
 #endif // DEBUG
@@ -60,6 +60,7 @@ static uint64_t HashRot13(const void *elem, size_t size)
         assert(stack != nullptr);
 
         stack->hashStack = HashRot13((void*)stack, sizeof((*stack)) - sizeof(stack->hashStack) - sizeof(stack->hashData));
+
         if(stack->data != nullptr)
         {
             stack->hashData = HashRot13((void*)stack->data, sizeof(*(stack->data)) * stack->capacity);
@@ -173,7 +174,7 @@ static const char *StackErrorToString(StackErrorCode error)
         GET_DESCR_(STACK_DATA_REALLOC_ERROR)
         GET_DESCR_(STACK_CAPACITY_LESS_SIZE)
 
-        default:{return nullptr;}
+        default: { return nullptr; }
     }
 }
 
@@ -226,7 +227,7 @@ StackErrorCode StackCtor(stack_t *stack, size_t capacity)
         assert(stack != nullptr);
 
         stack->nameStack = nameStack;
-        stack->leftStackCanary = STACK_LEFT_CANARY ^ (size_t)stack;
+        stack->leftStackCanary  = STACK_LEFT_CANARY  ^ (size_t)stack;
         stack->rightStackCanary = STACK_RIGHT_CANARY ^ (size_t)stack;
         stack->filePath = filePath;
         stack->line = line;
@@ -264,10 +265,12 @@ static StackErrorCode ReallocStack(stack_t *stack, size_t newCapacity)
 
     stack->data = data;
     stack->capacity = newCapacity;
+
     #ifdef DEBUG
         *(uint64_t*)(stack->data) = DATA_LEFT_CANARY;
         *(uint64_t*)((char*)stack->data + sizeof(uint64_t) + sizeof(stackData_t) * stack->capacity) = DATA_RIGHT_CANARY;
     #endif // DEBUG
+
     STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
@@ -285,7 +288,7 @@ static StackErrorCode ReallocStack(stack_t *stack, size_t newCapacity)
 
         for (size_t i = stack->size; i < stack->capacity; i++)
         {
-          ((stackData_t*)((char*)(stack->data) + sizeof(uint64_t)))[i] = RECALLOC_VALUE;
+            ((stackData_t*)((char*)(stack->data) + sizeof(uint64_t)))[i] = RECALLOC_VALUE;
         }
 
         STACK_AND_DATA_HASHING_(stack);
@@ -343,7 +346,8 @@ StackErrorCode StackPush(stack_t *stack, stackData_t element)
         }
     }
 
-    ((stackData_t*)((char*)stack->data + sizeof(uint64_t)))[stack->size] = element;
+    stackData_t *dataBegin = (stackData_t*)((char*)stack->data + sizeof(uint64_t));
+    dataBegin[stack->size] = element;
     stack->size++;
     STACK_AND_DATA_HASHING_(stack);
 
@@ -362,8 +366,10 @@ StackErrorCode StackPop(stack_t *stack, stackData_t *top)
 
     if (stack->size > 0)
     {
-        *top = ((stackData_t*)((char*)stack->data + sizeof(uint64_t)))[stack->size - 1];
+        stackData_t *dataEnd = (stackData_t*)((char*)stack->data + sizeof(uint64_t));
+        *top = dataEnd[stack->size - 1];
         stack->size--;
+
         STACK_AND_DATA_HASHING_(stack);
 
         if (stack->size != 0 && (stack->capacity / STACK_MEMORY_SHRINK >= stack->size))
@@ -386,7 +392,7 @@ StackErrorCode StackPop(stack_t *stack, stackData_t *top)
     }
 }
 
-StackErrorCode StackElemOperation(stack_t *stack, const char *operation)
+StackErrorCode StackElemOperation(stack_t *stack, CodeOperation codeOperation)
 {
     ASSERT_OK(stack);
 
@@ -401,19 +407,19 @@ StackErrorCode StackElemOperation(stack_t *stack, const char *operation)
     stackError = StackPop(stack, &elem2);
     IS_STACK_ERROR_(stack, stackError);
 
-    if (strcmp(operation, "add") == 0)
+    if (codeOperation == ADD)
     {
         stackError = StackPush(stack, elem2 + elem1);
     }
-    else if (strcmp(operation, "sub") == 0)
+    else if (codeOperation == SUB)
     {
         stackError = StackPush(stack, elem2 - elem1);
     }
-    else if (strcmp(operation, "mul") == 0)
+    else if (codeOperation == MUL)
     {
         stackError = StackPush(stack, elem2 * elem1);
     }
-    else if (strcmp(operation, "div") == 0)
+    else if (codeOperation == DIV)
     {
         stackError = StackPush(stack, elem2 / elem1);
     }
@@ -426,45 +432,6 @@ StackErrorCode StackElemOperation(stack_t *stack, const char *operation)
     STACK_AND_DATA_HASHING_(stack);
 
     ASSERT_OK(stack);
-    return stackError;
-}
-
-StackErrorCode CalculatingExpression(stack_t *stack, const char *nameInputFile, FILE *foutput)
-{
-    ASSERT_OK(stack);
-
-    StackErrorCode stackError = GetStackError(stack);
-    IS_STACK_ERROR_(stack, stackError);
-    assert(nameInputFile != nullptr);
-    assert(foutput != nullptr);
-
-    int linesCount = 0;
-    char *str = nullptr;
-    Line *lines = (Line *) fillStructLine(nameInputFile, &linesCount, str);
-
-    char stackOperation[20] = {};
-    stackData_t elem = 0;
-    for (int i = 0; i < linesCount; i++)
-    {
-        sscanf(lines[i].str, "%s %d", stackOperation, &elem);
-        if (strcmp(stackOperation, "push") == 0)
-        {
-            stackError = StackPush(stack, elem);
-            IS_STACK_ERROR_(stack, stackError);
-        }
-        else
-        {
-            stackError = StackElemOperation(stack, (const char*)stackOperation);
-            IS_STACK_ERROR_(stack, stackError);
-        }
-    }
-
-    stackError = writeFile(foutput, lines, linesCount, stack);
-    if (stackError != STACK_NO_ERROR)
-    {
-        return stackError;
-    }
-
     return stackError;
 }
 
@@ -495,7 +462,7 @@ size_t GetStackSize(stack_t *stack)
     {
         assert(filePath != nullptr);
 
-        foutput = fopen(NAME_OUTPUT_FILE, "a");
+        foutput = fopen(NAME_LOG_FILE, "a");
 
         StackErrorCode stackError = GetStackError(stack);
 
