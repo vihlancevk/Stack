@@ -84,6 +84,11 @@ StackErrorCode GetStackError(stack_t *stack)
         return STACK_NOT_EXIST;
     }
 
+    if (stack->status == STACK_CONSTRUCTED)
+    {
+        return STACK_ALREADY_CONSTRUCTED;
+    }
+
     if (stack->data == nullptr)
     {
         return STACK_DATA_NO_CREATE;
@@ -161,6 +166,12 @@ static const char *StackErrorToString(StackErrorCode error)
         GET_DESCR_(STACK_NO_ERROR)
         GET_DESCR_(STACK_NOT_EXIST)
         GET_DESCR_(STACK_ALREADY_CONSTRUCTED)
+        GET_DESCR_(STACK_DATA_NO_CREATE)
+        GET_DESCR_(STACK_DATA_DESTROY)
+        GET_DESCR_(STACK_POP_FROM_EMPTY)
+        GET_DESCR_(STACK_DATA_CALLOC_ERROR)
+        GET_DESCR_(STACK_DATA_REALLOC_ERROR)
+        GET_DESCR_(STACK_CAPACITY_LESS_SIZE)
 
         #ifdef DEBUG
             GET_DESCR_(STACK_LEFT_CANARY_DIED)
@@ -171,12 +182,6 @@ static const char *StackErrorToString(StackErrorCode error)
             GET_DESCR_(DATA_LEFT_CANARY_DIED)
             GET_DESCR_(DATA_RIGHT_CANARY_DIED)
         #endif // DEBUG
-
-        GET_DESCR_(STACK_DATA_DESTROY)
-        GET_DESCR_(STACK_POP_FROM_EMPTY)
-        GET_DESCR_(STACK_DATA_CALLOC_ERROR)
-        GET_DESCR_(STACK_DATA_REALLOC_ERROR)
-        GET_DESCR_(STACK_CAPACITY_LESS_SIZE)
 
         default: { return nullptr; }
     }

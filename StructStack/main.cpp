@@ -9,13 +9,9 @@ int main()
 
     stack_t stack = {};
     int stackError = STACKCTOR_(&stack, 10);
-    IS_STACK_ERROR_(&stack, STACKCTOR_(&stack, 10));
+    IS_STACK_ERROR_(&stack, stackError);
 
     IS_STACK_ERROR_(&stack, StackPush(&stack, 10));
-
-    FILE *foutput = fopen(OUTPUT_FILE, "w");
-
-    fclose(foutput);
 
     return stackError;
 }
