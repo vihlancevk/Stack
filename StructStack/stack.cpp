@@ -84,11 +84,6 @@ StackErrorCode GetStackError(stack_t *stack)
         return STACK_NOT_EXIST;
     }
 
-    if (stack->status == STACK_CONSTRUCTED)
-    {
-        return STACK_ALREADY_CONSTRUCTED;
-    }
-
     if (stack->data == nullptr)
     {
         return STACK_DATA_NO_CREATE;
@@ -165,7 +160,6 @@ static const char *StackErrorToString(StackErrorCode error)
     {
         GET_DESCR_(STACK_NO_ERROR)
         GET_DESCR_(STACK_NOT_EXIST)
-        GET_DESCR_(STACK_ALREADY_CONSTRUCTED)
         GET_DESCR_(STACK_DATA_NO_CREATE)
         GET_DESCR_(STACK_DATA_DESTROY)
         GET_DESCR_(STACK_POP_FROM_EMPTY)
