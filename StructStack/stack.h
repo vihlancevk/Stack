@@ -124,9 +124,9 @@ StackErrorCode StackCtor(stack_t *stack, size_t capacity);
 
 StackErrorCode StackDtor(stack_t *stack);
 
-StackErrorCode StackPush(stack_t *stack, int element);
+StackErrorCode StackPush(stack_t *stack, stackData_t element);
 
-StackErrorCode StackPop(stack_t *stack, int *top);
+StackErrorCode StackPop(stack_t *stack, stackData_t *top);
 
 size_t GetStackCapacity(stack_t *stack);
 

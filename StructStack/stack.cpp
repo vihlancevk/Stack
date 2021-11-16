@@ -256,12 +256,14 @@ static StackErrorCode ReallocStack(stack_t *stack, size_t newCapacity)
         stackData_t *data = (stackData_t *)realloc(stack->data, newCapacity * sizeof(stackData_t) + 2 * sizeof(uint64_t));
         if (data == nullptr)
         {
+            free(stack->data);
             return STACK_DATA_REALLOC_ERROR;
         }
     #else
         stackData_t *data = (stackData_t *)realloc(stack->data, newCapacity * sizeof(stackData_t));
         if (data == nullptr)
         {
+            free(stack->data);
             return STACK_DATA_REALLOC_ERROR;
         }
     #endif // DEBUG
@@ -325,9 +327,6 @@ StackErrorCode StackDtor(stack_t *stack)
         stack->status = STACK_DESTROYED;
     }
 
-    STACK_AND_DATA_HASHING_(stack);
-
-    ASSERT_OK(stack);
     return stackError;
 }
 

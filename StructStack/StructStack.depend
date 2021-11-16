@@ -1,13 +1,13 @@
 # depslib dependency file v1.0
-1633975047 source:/home/kostya/StructStack/main.cpp
+1635350633 source:/home/kostya/StructStack/main.cpp
 	"stack.h"
 
-1633975325 /home/kostya/StructStack/stack.h
+1635350614 /home/kostya/StructStack/stack.h
 	<stdio.h>
 	<stdint.h>
 	<assert.h>
 
-1633974761 source:/home/kostya/StructStack/stack.cpp
+1633976918 source:/home/kostya/StructStack/stack.cpp
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

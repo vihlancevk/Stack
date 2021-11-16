@@ -13,5 +13,15 @@ int main()
 
     IS_STACK_ERROR_(&stack, StackPush(&stack, 10));
 
+    IS_STACK_ERROR_(&stack, StackPush(&stack, 10));
+
+    int top = 0;
+    IS_STACK_ERROR_(&stack, StackPop(&stack, &top));
+    printf("%d\n", top);
+    IS_STACK_ERROR_(&stack, StackPop(&stack, &top));
+    printf("%d\n", top);
+
+    StackDtor(&stack);
+
     return stackError;
 }
