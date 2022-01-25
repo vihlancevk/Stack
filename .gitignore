@@ -1,6 +1,6 @@
-/bin
-/obj
-log.txt
-StructStack.cbp
-StructStack.depend
-StructStack.layout
+src/bin/
+src/obj/
+src/log.txt
+src/StructStack.cbp
+src/StructStack.depend
+src/StructStack.layout

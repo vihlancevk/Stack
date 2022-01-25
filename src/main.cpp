@@ -1,4 +1,4 @@
-#include "stack.h"
+#include "../libs/stack.h"
 
 const char *INPUT_FILE  = "input.txt";
 const char *OUTPUT_FILE = "output.txt";
