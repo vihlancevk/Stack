@@ -1,4 +1,4 @@
-# StructStack
+# Stack
 Stack structure implemented on the basis of an array. 
 
 The main feature of this project is its protection, which is implemented using: 
